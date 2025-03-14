@@ -21,4 +21,28 @@ locals {
 
   validate_encryption_rules = ((var.infrastructure_encryption_enabled && var.account_kind != "StorageV2") ?
   file("ERROR: Infrastructure encryption can only be enabled when account kind is StorageV2") : true)
+
+  share_properties = flatten([
+    for fs_key, fs in try(var.file_share_properties, {}) : {
+
+      fs_key           = fs_key
+      name             = try(fs.name, fs_key)
+      quota            = try(fs.quota, "50")
+      metadata         = try(fs.metadata, {})
+      access_tier      = try(fs.access_tier, "Hot")
+      enabled_protocol = try(fs.protocol, "SMB")
+      acl              = try(fs.acl, {})
+    }
+  ])
+
+  share_files = flatten([
+    for fs_key, fs in try(var.file_share_properties, {}) : [
+      for file_name in fileset("${path.root}/${fs.folder_path}", "*") : {
+        share_name   = fs_key
+        file_name    = file_name
+        content_type = fs.content_type
+        local_path   = "${path.root}/${fs.folder_path}/${file_name}"
+      }
+    ]
+  ])
 }

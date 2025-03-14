@@ -91,13 +91,40 @@ module "storage_account" {
 
   enable_static_website = true
 
-  blob_cors = {
-    test = {
-      allowed_headers    = ["*"]
-      allowed_methods    = ["GET", "DELETE"]
-      allowed_origins    = ["*"]
-      exposed_headers    = ["*"]
-      max_age_in_seconds = 5
+  file_share_properties = {
+    otel = {
+      name             = "otel"
+      quota            = "50"
+      metadata         = {}
+      access_tier      = "Hot"
+      enabled_protocol = "SMB"
+      folder_path      = "./files/otel"
+      content_type     = "application/octet-stream"
+      acl = {
+        id = "default"
+        access_policy = {
+          permissions = "rwdl"
+          start       = "2023-01-01T00:00:00Z"
+          expiry      = "2024-01-01T00:00:00Z"
+        }
+      }
+    },
+    traefik = {
+      name             = "traefik"
+      quota            = "50"
+      metadata         = {}
+      access_tier      = "Hot"
+      enabled_protocol = "SMB"
+      folder_path      = "./files/traefik"
+      content_type     = "application/octet-stream"
+      acl = {
+        id = "default"
+        access_policy = {
+          permissions = "rwdl"
+          start       = "2023-01-01T00:00:00Z"
+          expiry      = "2024-01-01T00:00:00Z"
+        }
+      }
     }
   }
 }

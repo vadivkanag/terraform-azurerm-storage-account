@@ -218,3 +218,31 @@ variable "allowed_copy_scope" {
   type        = string
   default     = null
 }
+
+variable "smb_contributors" {
+  description = "List of SMB contributors to the storage shares, for ex: sre entra object id's, github runner sp id's etc."
+  type        = list(string)
+  default     = []
+}
+
+variable "file_share_properties" {
+  description = "Properties of the shares to be created"
+  type = map(object({
+    name             = string
+    quota            = string
+    metadata         = map(string)
+    access_tier      = string
+    enabled_protocol = string
+    folder_path      = string
+    content_type     = string
+    acl = map(object({
+      id = string
+      access_policy = map(object({
+        permissions = string
+        start       = string
+        expiry      = string
+      }))
+    }))
+  }))
+  default = {}
+}

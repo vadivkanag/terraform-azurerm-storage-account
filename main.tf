@@ -88,3 +88,60 @@ resource "azurerm_storage_encryption_scope" "scope" {
   source                             = coalesce(each.value.source, "Microsoft.Storage")
   infrastructure_encryption_required = coalesce(each.value.enable_infrastructure_encryption, var.infrastructure_encryption_enabled)
 }
+
+resource "azurerm_storage_share" "share" {
+  for_each = {
+    for fs in local.share_properties : fs.fs_key => fs
+  }
+
+  name               = each.value.name
+  storage_account_id = azurerm_storage_account.sa.id
+  quota              = try(each.value.quota, 50)
+  metadata           = each.value.metadata
+  access_tier        = each.value.access_tier
+  enabled_protocol   = each.value.enabled_protocol
+
+  dynamic "acl" {
+    for_each = try(each.value.acl, {}) != {} ? each.value.acl : {}
+    content {
+      id = try(acl.value.id, acl.key)
+      dynamic "access_policy" {
+        for_each = try(acl.value.access_policy, null) != null ? { default : acl.value.access_policy } : {}
+        content {
+          permissions = try(access_policy.value.permissions, null)
+          start       = try(access_policy.value.start, null)
+          expiry      = try(access_policy.value.expiry, null)
+        }
+      }
+    }
+  }
+  lifecycle {
+    precondition {
+      condition     = each.value.enabled_protocol == "NFS" ? var.storage.access_tier == "Premium" : true
+      error_message = "NFS file shares can only be enabled on Premium Storage Accounts."
+    }
+    precondition {
+      condition     = var.storage.account_tier != "Premium" || each.value.quota >= 100
+      error_message = "File share quota must be at least 100Gb for Premium Storage Accounts."
+    }
+  }
+}
+
+resource "azurerm_storage_share_file" "share_file" {
+  for_each = {
+    for fs in local.share_files : fs.file_name => fs
+  }
+  name             = each.value.file_name
+  storage_share_id = azurerm_storage_share.share[each.value.share_name].url
+  source           = each.value.local_path
+  content_type     = each.value.content_type
+  content_md5      = filemd5(each.value.local_path)
+}
+
+resource "azurerm_role_assignment" "sta_file_smb_contributor" {
+  for_each = toset(var.smb_contributors)
+
+  scope                = azurerm_storage_account.sa.id
+  role_definition_name = "Storage File Data SMB Share Contributor"
+  principal_id         = each.value
+}

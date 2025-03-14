@@ -75,14 +75,14 @@ module "storage_account" {
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
-  names               = module.metadata.names
   tags                = module.metadata.tags
 
-  account_kind             = "FileStorage"
-  replication_type         = "LRS"
-  account_tier             = "Premium"
-  access_tier              = "Hot"
-  enable_large_file_share  = true
+  public_network_access_enabled = true
+  account_kind                  = "FileStorage"
+  replication_type              = "LRS"
+  account_tier                  = "Premium"
+  access_tier                   = "Hot"
+  enable_large_file_share       = true
 
   access_list = {
     "my_ip" = data.http.my_ip.body
