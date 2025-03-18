@@ -146,3 +146,8 @@ output "encryption_scope_ids" {
     k => azurerm_storage_encryption_scope.scope[k].id
   }
 }
+
+output "storage_shares" {
+  description = "storage share id."
+  value       = azurerm_storage_share.ss
+}
