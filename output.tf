@@ -148,6 +148,6 @@ output "encryption_scope_ids" {
 }
 
 output "storage_shares" {
-  description = "storage share id."
+  description = "List of storage shares object."
   value       = azurerm_storage_share.ss
 }
