@@ -105,7 +105,7 @@ No modules.
 | <a name="output_secondary_table_endpoint"></a> [secondary\_table\_endpoint](#output\_secondary\_table\_endpoint) | The endpoint URL for table storage in the secondary location. |
 | <a name="output_secondary_web_endpoint"></a> [secondary\_web\_endpoint](#output\_secondary\_web\_endpoint) | The endpoint URL for web storage in the secondary location. |
 | <a name="output_secondary_web_host"></a> [secondary\_web\_host](#output\_secondary\_web\_host) | Hostname with port for web storage in the secondary location. |
-| <a name="output_storage_shares"></a> [storage\_shares](#output\_storage\_shares) | storage share id. |
+| <a name="output_storage_shares"></a> [storage\_shares](#output\_storage\_shares) | List of storage shares object. |
 | <a name="output_tenant_id"></a> [tenant\_id](#output\_tenant\_id) | The Tenant ID for the Service Principal associated with the Identity of this Storage Account. |
 
 <!--- END_TF_DOCS --->
