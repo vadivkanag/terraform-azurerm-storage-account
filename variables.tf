@@ -225,24 +225,33 @@ variable "smb_contributors" {
   default     = []
 }
 
-variable "file_share_properties" {
-  description = "Properties of the shares to be created"
+variable "share_file" {
+  description = "Files to be uploaded to the shares"
   type = map(object({
-    name             = string
-    quota            = string
-    metadata         = map(string)
-    access_tier      = string
-    enabled_protocol = string
-    folder_path      = string
-    content_type     = string
-    acl = map(object({
-      id = string
-      access_policy = map(object({
-        permissions = string
-        start       = string
-        expiry      = string
-      }))
-    }))
+    file_share_name   = string
+    storage_share_url = string
+    folder_path       = string
+    content_type      = optional(string)
   }))
   default = {}
+}
+
+variable "storage_share" {
+  description = "List of File Shares to be created in this Storage Account."
+  type = list(object({
+    name             = string
+    quota            = number
+    metadata         = optional(map(string))
+    enabled_protocol = optional(string)
+    acl = optional(list(object({
+      id = string
+      access_policy = object({
+        permissions = string
+        start       = optional(string)
+        expiry      = optional(string)
+      })
+    })))
+  }))
+  default  = []
+  nullable = false
 }
