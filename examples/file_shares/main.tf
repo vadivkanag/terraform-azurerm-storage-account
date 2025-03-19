@@ -70,6 +70,14 @@ module "virtual_network" {
   }
 }
 
+locals {
+  storage_account_name = "sandboxxyzdevsa"
+  smb_contributors = [
+    # sre team entra object id,
+    # gh runner service principal object id, etc
+  ]
+}
+
 module "storage_account" {
   source = "../../"
 
@@ -89,42 +97,29 @@ module "storage_account" {
     "iaas-outbound" = module.virtual_network.subnet["iaas-outbound"].id
   }
 
-  enable_static_website = true
+  smb_contributors = local.smb_contributors
 
-  file_share_properties = {
+  storage_share = [
+    {
+      name  = "otel"
+      quota = "50"
+    },
+    {
+      name  = "traefik"
+      quota = "50"
+    },
+  ]
+  share_file = {
     otel = {
-      name             = "otel"
-      quota            = "50"
-      metadata         = {}
-      access_tier      = "Hot"
-      enabled_protocol = "SMB"
-      folder_path      = "./files/otel"
-      content_type     = "application/octet-stream"
-      acl = {
-        id = "default"
-        access_policy = {
-          permissions = "rwdl"
-          start       = "2023-01-01T00:00:00Z"
-          expiry      = "2024-01-01T00:00:00Z"
-        }
-      }
+      file_share_name   = "otel"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/otel"
+      folder_path       = "./files/otel"
     },
     traefik = {
-      name             = "traefik"
-      quota            = "50"
-      metadata         = {}
-      access_tier      = "Hot"
-      enabled_protocol = "SMB"
-      folder_path      = "./files/traefik"
-      content_type     = "application/octet-stream"
-      acl = {
-        id = "default"
-        access_policy = {
-          permissions = "rwdl"
-          start       = "2023-01-01T00:00:00Z"
-          expiry      = "2024-01-01T00:00:00Z"
-        }
-      }
-    }
+      file_share_name   = "traefik"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/traefik"
+      folder_path       = "./files/traefik"
+    },
   }
+  depends_on = [module.resource_group, module.virtual_network]
 }
