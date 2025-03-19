@@ -132,28 +132,10 @@ variable "blob_cors" {
   default = null
 }
 
-variable "enable_static_website" {
-  description = "Controls if static website to be enabled on the storage account. Possible values are `true` or `false`"
-  type        = bool
-  default     = false
-}
-
 variable "cross_tenant_replication_enabled" {
   description = "Enable cross tenant replication when needed and valid reason. Possible values are `true` or `false`"
   type        = bool
   default     = false
-}
-
-variable "index_path" {
-  description = "path from your repo root to index.html"
-  type        = string
-  default     = null
-}
-
-variable "custom_404_path" {
-  description = "path from your repo root to your custom 404 page"
-  type        = string
-  default     = null
 }
 
 variable "encryption_scopes" {

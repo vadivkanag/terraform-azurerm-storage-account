@@ -89,8 +89,6 @@ module "storage_account" {
     "iaas-outbound" = module.virtual_network.subnet["iaas-outbound"].id
   }
 
-  enable_static_website = true
-
   blob_cors = {
     test = {
       allowed_headers    = ["*"]
