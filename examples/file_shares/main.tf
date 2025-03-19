@@ -103,10 +103,18 @@ module "storage_account" {
     {
       name  = "otel"
       quota = "50"
+      metadata = {
+        "key1" = "value1"
+        "key2" = "value2"
+      }
     },
     {
       name  = "traefik"
       quota = "50"
+      metadata = {
+        "key3" = "value3"
+        "key4" = "value4"
+      }
     },
   ]
   share_file = {
