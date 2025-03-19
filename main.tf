@@ -81,7 +81,7 @@ resource "azurerm_storage_encryption_scope" "scope" {
   infrastructure_encryption_required = coalesce(each.value.enable_infrastructure_encryption, var.infrastructure_encryption_enabled)
 }
 
-resource "azurerm_role_assignment" "sta_file_smb_contributor" {
+resource "azurerm_role_assignment" "smb_contributor" {
   for_each = toset(var.smb_contributors)
 
   scope                = azurerm_storage_account.sa.id
@@ -124,7 +124,7 @@ resource "azurerm_storage_share" "ss" {
       error_message = "File share quota must be at least 100Gb for Premium Storage Accounts."
     }
   }
-  depends_on = [azurerm_storage_account.sa, azurerm_role_assignment.sta_file_smb_contributor]
+  depends_on = [azurerm_storage_account.sa, azurerm_role_assignment.smb_contributor]
 }
 
 resource "azurerm_storage_share_file" "sf" {
