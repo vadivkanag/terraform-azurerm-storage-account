@@ -1,7 +1,7 @@
 locals {
   # Automatically set account tier for BlockBlobStorage/FileStorage if not specified.
   #   Not correcting incompatible type if specified to prevent user misunderstanding.
-  account_tier           = (var.account_tier == null ? (var.account_kind == "BlockBlobStorage" || var.account_kind == "FileStorage" ? "Premium" : "Standard") : var.account_tier)
+  account_tier = (var.account_tier == null ? (var.account_kind == "BlockBlobStorage" || var.account_kind == "FileStorage" ? "Premium" : "Standard") : var.account_tier)
 
   validate_nfsv3 = (!var.nfsv3_enabled || (var.nfsv3_enabled && var.enable_hns) ?
   true : file("ERROR: NFS V3 can only be enabled when Hierarchical Namespaces are enabled"))
