@@ -1,11 +1,7 @@
 locals {
   # Automatically set account tier for BlockBlobStorage/FileStorage if not specified.
   #   Not correcting incompatible type if specified to prevent user misunderstanding.
-  account_tier           = (var.account_tier == null ? (var.account_kind == "BlockBlobStorage" || var.account_kind == "FileStorage" ? "Premium" : "Standard") : var.account_tier)
-  static_website_enabled = (local.validate_static_website) ? [{}] : []
-
-  validate_static_website = (var.enable_static_website ? ((var.account_kind == "BlockBlobStorage" || var.account_kind == "StorageV2") ?
-  true : file("ERROR: Account kind must be BlockBlobStorage or StorageV2 when enabling static website")) : false)
+  account_tier = (var.account_tier == null ? (var.account_kind == "BlockBlobStorage" || var.account_kind == "FileStorage" ? "Premium" : "Standard") : var.account_tier)
 
   validate_nfsv3 = (!var.nfsv3_enabled || (var.nfsv3_enabled && var.enable_hns) ?
   true : file("ERROR: NFS V3 can only be enabled when Hierarchical Namespaces are enabled"))
@@ -21,4 +17,16 @@ locals {
 
   validate_encryption_rules = ((var.infrastructure_encryption_enabled && var.account_kind != "StorageV2") ?
   file("ERROR: Infrastructure encryption can only be enabled when account kind is StorageV2") : true)
+
+  share_files = flatten([
+    for share in try(var.share_file, []) : [
+      for file_name in fileset("${path.root}/${share.folder_path}", "*") : {
+        file_share_name   = share.file_share_name
+        file_name         = file_name
+        storage_share_url = share.storage_share_url
+        content_type      = share.content_type
+        local_path        = "${path.root}/${share.folder_path}/${file_name}"
+      }
+    ]
+  ])
 }

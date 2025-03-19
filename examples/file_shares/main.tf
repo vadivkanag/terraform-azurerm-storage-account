@@ -70,6 +70,14 @@ module "virtual_network" {
   }
 }
 
+locals {
+  storage_account_name = "sandboxxyzdevsa"
+  smb_contributors = [
+    # sre team entra object id,
+    # gh runner service principal object id, etc
+  ]
+}
+
 module "storage_account" {
   source = "../../"
 
@@ -89,13 +97,37 @@ module "storage_account" {
     "iaas-outbound" = module.virtual_network.subnet["iaas-outbound"].id
   }
 
-  blob_cors = {
-    test = {
-      allowed_headers    = ["*"]
-      allowed_methods    = ["GET", "DELETE"]
-      allowed_origins    = ["*"]
-      exposed_headers    = ["*"]
-      max_age_in_seconds = 5
-    }
+  smb_contributors = local.smb_contributors
+
+  storage_share = [
+    {
+      name  = "otel"
+      quota = "50"
+      metadata = {
+        "key1" = "value1"
+        "key2" = "value2"
+      }
+    },
+    {
+      name  = "traefik"
+      quota = "50"
+      metadata = {
+        "key3" = "value3"
+        "key4" = "value4"
+      }
+    },
+  ]
+  share_file = {
+    otel = {
+      file_share_name   = "otel"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/otel"
+      folder_path       = "./files/otel"
+    },
+    traefik = {
+      file_share_name   = "traefik"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/traefik"
+      folder_path       = "./files/traefik"
+    },
   }
+  depends_on = [module.resource_group, module.virtual_network]
 }

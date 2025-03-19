@@ -78,6 +78,7 @@ module "storage_account" {
   tags                = module.metadata.tags
   account_kind        = "StorageV2"
 
+  public_network_access_enabled     = true
   replication_type                  = "LRS"
   infrastructure_encryption_enabled = true
 

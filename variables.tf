@@ -132,28 +132,10 @@ variable "blob_cors" {
   default = null
 }
 
-variable "enable_static_website" {
-  description = "Controls if static website to be enabled on the storage account. Possible values are `true` or `false`"
-  type        = bool
-  default     = false
-}
-
 variable "cross_tenant_replication_enabled" {
   description = "Enable cross tenant replication when needed and valid reason. Possible values are `true` or `false`"
   type        = bool
   default     = false
-}
-
-variable "index_path" {
-  description = "path from your repo root to index.html"
-  type        = string
-  default     = null
-}
-
-variable "custom_404_path" {
-  description = "path from your repo root to your custom 404 page"
-  type        = string
-  default     = null
 }
 
 variable "encryption_scopes" {
@@ -217,4 +199,41 @@ variable "allowed_copy_scope" {
   description = "Restrict copy to and from Storage Accounts within an AAD tenant or with Private Links to the same VNet. Possible values are AAD and PrivateLink."
   type        = string
   default     = null
+}
+
+variable "smb_contributors" {
+  description = "List of SMB contributors to the storage shares, for ex: sre entra object id's, github runner sp id's etc."
+  type        = list(string)
+  default     = []
+}
+
+variable "share_file" {
+  description = "Files to be uploaded to the shares"
+  type = map(object({
+    file_share_name   = string
+    storage_share_url = string
+    folder_path       = string
+    content_type      = optional(string)
+  }))
+  default = {}
+}
+
+variable "storage_share" {
+  description = "List of File Shares to be created in this Storage Account."
+  type = list(object({
+    name             = string
+    quota            = number
+    metadata         = optional(map(string))
+    enabled_protocol = optional(string)
+    acl = optional(list(object({
+      id = string
+      access_policy = object({
+        permissions = string
+        start       = optional(string)
+        expiry      = optional(string)
+      })
+    })))
+  }))
+  default  = []
+  nullable = false
 }
