@@ -64,6 +64,14 @@ resource "azurerm_storage_account" "sa" {
     }
   }
 
+  dynamic "static_website" {
+    for_each = local.static_website_enabled
+    content {
+      index_document     = var.index_path
+      error_404_document = var.custom_404_path
+    }
+  }
+
   network_rules {
     default_action             = var.default_network_rule
     ip_rules                   = values(var.access_list)
