@@ -98,7 +98,7 @@ resource "azurerm_role_assignment" "smb_contributor" {
 }
 
 resource "azurerm_storage_share" "ss" {
-  for_each = try({ for s in var.storage_share : s.name => s }, {})
+  for_each = try({ for s in var.storage_shares : s.name => s }, {})
 
   storage_account_id = azurerm_storage_account.sa.id
 

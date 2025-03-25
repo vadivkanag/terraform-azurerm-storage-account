@@ -225,18 +225,19 @@ variable "smb_contributors" {
   default     = []
 }
 
-variable "share_file" {
+variable "share_files" {
   description = "Files to be uploaded to the shares"
   type = map(object({
     file_share_name   = string
     storage_share_url = string
-    folder_path       = string
+    fileset_path      = string
+    fileset_pattern   = string
     content_type      = optional(string)
   }))
   default = {}
 }
 
-variable "storage_share" {
+variable "storage_shares" {
   description = "List of File Shares to be created in this Storage Account."
   type = list(object({
     name             = string
