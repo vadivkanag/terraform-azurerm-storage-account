@@ -23,13 +23,13 @@ locals {
   file("ERROR: Infrastructure encryption can only be enabled when account kind is StorageV2") : true)
 
   share_files = flatten([
-    for share in try(var.share_file, []) : [
-      for file_name in fileset("${path.root}/${share.folder_path}", "*") : {
+    for share in try(var.share_files, []) : [
+      for file_name in fileset("${share.fileset_path}", "${share.fileset_pattern}") : {
         file_share_name   = share.file_share_name
         file_name         = file_name
         storage_share_url = share.storage_share_url
         content_type      = share.content_type
-        local_path        = "${path.root}/${share.folder_path}/${file_name}"
+        local_path        = "${share.fileset_path}/${file_name}"
       }
     ]
   ])

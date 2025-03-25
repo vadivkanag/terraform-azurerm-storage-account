@@ -99,7 +99,7 @@ module "storage_account" {
 
   smb_contributors = local.smb_contributors
 
-  storage_share = [
+  storage_shares = [
     {
       name  = "otel"
       quota = "50"
@@ -117,16 +117,18 @@ module "storage_account" {
       }
     },
   ]
-  share_file = {
+  share_files = {
     otel = {
       file_share_name   = "otel"
       storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/otel"
-      folder_path       = "./files/otel"
+      fileset_path      = "./files/otel"
+      fileset_pattern   = "*"
     },
     traefik = {
       file_share_name   = "traefik"
       storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/traefik"
-      folder_path       = "./files/traefik"
+      fileset_path      = "./files/traefik"
+      fileset_pattern   = "{*hello*,world,first}.**" #for more patterns checkout fileset() docs here: https://developer.hashicorp.com/terraform/language/functions/fileset#examples
     },
   }
   depends_on = [module.resource_group, module.virtual_network]
