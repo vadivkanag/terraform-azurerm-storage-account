@@ -77,7 +77,7 @@ module "storage_account" {
   location            = module.resource_group.location
   tags                = module.metadata.tags
 
-  public_network_access_enabled = true
+  public_network_access_enabled = false
   account_kind                  = "FileStorage"
   replication_type              = "LRS"
   account_tier                  = "Premium"
