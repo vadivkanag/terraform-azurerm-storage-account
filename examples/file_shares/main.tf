@@ -107,6 +107,14 @@ module "storage_account" {
         "key1" = "value1"
         "key2" = "value2"
       }
+      acl = [{
+        id = "MTIzNDU2N"
+        access_policy = {
+          permissions = "rwdl"
+          start       = "2025-04-01T09:38:21Z"
+          expiry      = "2025-05-02T10:38:21Z"
+        }
+      }]
     },
     {
       name  = "traefik"
