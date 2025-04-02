@@ -22,7 +22,7 @@ module "subscription" {
 }
 
 module "naming" {
-  source = "github.com/Azure-Terraform/example-naming-template.git?ref=v1.0.0"
+  source = "git@github.com:Azure-Terraform/example-naming-template.git?ref=v1.0.0"
 }
 
 module "metadata" {
@@ -51,7 +51,7 @@ module "resource_group" {
 }
 
 module "virtual_network" {
-  source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v2.6.0"
+  source = "github.com/Azure-Terraform/terraform-azurerm-virtual-network.git?ref=v5.0.0"
 
   naming_rules = module.naming.yaml
 
@@ -70,30 +70,74 @@ module "virtual_network" {
   }
 }
 
+locals {
+  storage_account_name = "sandboxxyzdevsa"
+  smb_contributors = [
+    # sre team entra object id,
+    # gh runner service principal object id, etc
+  ]
+}
+
 module "storage_account" {
   source = "../../"
 
   resource_group_name = module.resource_group.name
   location            = module.resource_group.location
   tags                = module.metadata.tags
-  account_kind        = "StorageV2"
 
-  public_network_access_enabled     = false
-  replication_type                  = "LRS"
-  infrastructure_encryption_enabled = true
+  public_network_access_enabled = false
+  replication_type              = "LRS"
+  enable_large_file_share       = true
 
-  encryption_scopes = {
-    customer1 = {
-      enable_infrastructure_encryption = false
-      scope                            = "Microsoft.KeyVault"
-    }
-    customer2 = {
-      # enable_infrastructure_encryption inherits from base resource setting if not defined"
-      scope = "Microsoft.Storage"
-    }
+  access_list = {
+    "my_ip" = data.http.my_ip.body
   }
-}
 
-output "encryption_scope_ids" {
-  value = module.storage_account.encryption_scope_ids
+  service_endpoints = {
+    "iaas-outbound" = module.virtual_network.subnet["iaas-outbound"].id
+  }
+
+  smb_contributors = local.smb_contributors
+
+  storage_shares = [
+    {
+      name  = "otel"
+      quota = "50"
+      metadata = {
+        "key1" = "value1"
+        "key2" = "value2"
+      }
+      acl = [{
+        id = "MTIzNDU2N"
+        access_policy = {
+          permissions = "rwdl"
+          start       = "2025-04-01T09:38:21Z"
+          expiry      = "2025-05-02T10:38:21Z"
+        }
+      }]
+    },
+    {
+      name  = "traefik"
+      quota = "50"
+      metadata = {
+        "key3" = "value3"
+        "key4" = "value4"
+      }
+    },
+  ]
+  share_files = {
+    otel = {
+      file_share_name   = "otel"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/otel"
+      fileset_path      = "./files/otel"
+      fileset_pattern   = "*"
+    },
+    traefik = {
+      file_share_name   = "traefik"
+      storage_share_url = "https://${local.storage_account_name}.file.core.windows.net/traefik"
+      fileset_path      = "./files/traefik"
+      fileset_pattern   = "{*hello*,world,first}.**" #for more patterns checkout fileset() docs here: https://developer.hashicorp.com/terraform/language/functions/fileset#examples
+    },
+  }
+  depends_on = [module.resource_group, module.virtual_network]
 }

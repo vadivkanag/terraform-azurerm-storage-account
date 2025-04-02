@@ -77,8 +77,9 @@ module "storage_account" {
   location            = module.resource_group.location
   tags                = module.metadata.tags
 
-  replication_type        = "LRS"
-  enable_large_file_share = true
+  public_network_access_enabled = false
+  replication_type              = "LRS"
+  enable_large_file_share       = true
 
   access_list = {
     "my_ip" = data.http.my_ip.body

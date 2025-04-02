@@ -218,3 +218,41 @@ variable "allowed_copy_scope" {
   type        = string
   default     = null
 }
+
+variable "smb_contributors" {
+  description = "List of SMB contributors to the storage shares, for ex: sre entra object id's, github runner sp id's etc."
+  type        = list(string)
+  default     = []
+}
+
+variable "share_files" {
+  description = "Files to be uploaded to the shares"
+  type = map(object({
+    file_share_name   = string
+    storage_share_url = string
+    fileset_path      = string
+    fileset_pattern   = string
+    content_type      = optional(string)
+  }))
+  default = {}
+}
+
+variable "storage_shares" {
+  description = "List of File Shares to be created in this Storage Account."
+  type = list(object({
+    name             = string
+    quota            = number
+    metadata         = optional(map(string))
+    enabled_protocol = optional(string)
+    acl = optional(list(object({
+      id = string
+      access_policy = object({
+        permissions = string
+        start       = optional(string)
+        expiry      = optional(string)
+      })
+    })))
+  }))
+  default  = []
+  nullable = false
+}

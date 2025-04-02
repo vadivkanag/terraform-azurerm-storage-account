@@ -88,3 +88,61 @@ resource "azurerm_storage_encryption_scope" "scope" {
   source                             = coalesce(each.value.source, "Microsoft.Storage")
   infrastructure_encryption_required = coalesce(each.value.enable_infrastructure_encryption, var.infrastructure_encryption_enabled)
 }
+
+resource "azurerm_role_assignment" "smb_contributor" {
+  for_each = toset(var.smb_contributors)
+
+  scope                = azurerm_storage_account.sa.id
+  role_definition_name = "Storage File Data SMB Share Contributor"
+  principal_id         = each.value
+}
+
+resource "azurerm_storage_share" "ss" {
+  for_each = try({ for s in var.storage_shares : s.name => s }, {})
+
+  storage_account_id = azurerm_storage_account.sa.id
+
+  name  = each.key
+  quota = each.value.quota
+
+  enabled_protocol = try(each.value.enabled_protocol, "SMB")
+  metadata         = each.value.metadata
+
+  dynamic "acl" {
+    for_each = each.value.acl != null ? each.value.acl : []
+
+    content {
+      id = acl.value.id
+
+      access_policy {
+        permissions = acl.value.access_policy.permissions
+        start       = acl.value.access_policy.start
+        expiry      = acl.value.access_policy.expiry
+      }
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = each.value.enabled_protocol == "NFS" ? var.account_tier == "Premium" : true
+      error_message = "NFS file shares can only be enabled on Premium Storage Accounts."
+    }
+    precondition {
+      condition     = var.account_tier != "Premium" || each.value.quota >= 100
+      error_message = "File share quota must be at least 100Gb for Premium Storage Accounts."
+    }
+  }
+  depends_on = [azurerm_storage_account.sa, azurerm_role_assignment.smb_contributor]
+}
+
+resource "azurerm_storage_share_file" "sf" {
+  for_each = {
+    for fs in local.share_files : fs.file_name => fs
+  }
+  name             = each.value.file_name
+  storage_share_id = each.value.storage_share_url
+  source           = each.value.local_path
+  content_type     = each.value.content_type
+  content_md5      = filemd5(each.value.local_path)
+  depends_on       = [azurerm_storage_account.sa, azurerm_storage_share.ss]
+}
